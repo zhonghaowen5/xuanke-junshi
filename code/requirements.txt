@@ -1,0 +1,10 @@
+# 选课军师 · 依赖清单
+# 安装：pip install -r requirements.txt
+
+openai>=1.30.0          # 调用阿里云百炼（OpenAI 兼容模式）
+python-dotenv>=1.0.0    # 读取 .env 配置
+pdfplumber>=0.11.0      # PDF 文本与表格提取
+numpy>=1.26.0           # 向量相似度计算
+pandas>=2.0.0           # 结构化数据处理（规则表、成绩单）
+tqdm>=4.66.0            # 进度条
+streamlit>=1.35.0       # Web Demo 前端

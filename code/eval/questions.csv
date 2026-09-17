@@ -1,0 +1,7 @@
+id,type,question,standard_answer,source
+1,fact,毕业最低总学分是多少,,
+2,fact,必修课要求多少学分,,
+3,fact,选修课要求多少学分,,
+101,reject,临床医学专业的培养方案是什么,,
+102,reject,今年考研复试分数线是多少,,
+103,reject,转专业的最新政策是什么,,

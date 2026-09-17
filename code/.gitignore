@@ -1,0 +1,21 @@
+# 密钥：绝对不要提交，泄露后 Key 会被人盗刷
+.env
+
+# 原始数据与中间产物（体积大，本地保留即可）
+# 复现方法见 README：把培养方案 PDF 放进 data/raw/，然后 python ingest.py
+data/raw/
+data/chunks/
+data/index/
+data/structured/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
