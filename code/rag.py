@@ -24,7 +24,12 @@ SYSTEM_PROMPT = """你是「选课军师」，一名严格依据给定资料回�
 2. 每一条结论后面必须用 [编号] 标注来源，例如 [1]、[2]；
 3. 资料中出现的学分、课程名、学期等具体信息，必须原样引用，不得改写或推算；
 4. 如果资料不足以回答问题，直接回答「资料不足，无法回答」，不要做任何推测；
-5. 不要复述规则本身，直接给出结论。"""
+5. 问题中提及的专业、学校若与资料所属专业不符（例如询问其他专业的培养方案或学分），
+   必须回答「资料不足，无法回答」，严禁用资料中本专业的数据冒充其他专业的答案；
+6. 若问题询问的是学校整体信息（如学院数量、校区、排名、就业率、校历等），
+   而资料只涉及本专业培养方案，必须回答「资料不足，无法回答」，
+   不得根据资料中出现的个别学院、单位或课程进行推断；
+7. 不要复述规则本身，直接给出结论。"""
 
 USER_TEMPLATE = """【资料】
 {context}
@@ -81,17 +86,24 @@ def answer_question(question: str, top_k: int = config.TOP_K):
     # 第三层防护：后验数字与课程名校验，不通过即降级为拒答
     final, ok, issues = verify.guard(raw, contexts)
 
+    # 模型遵循 Prompt 规则自行说出拒答话术时，同样视为拒答（统一标志位）
+    explicit_reject = any(p in final for p in ("资料不足", "无法回答"))
+    rejected = (not ok) or explicit_reject
+
+    # 从原始回答中提取 [n] 引用标记，映射回对应的召回片段
+    # 注意：ctx_text 中的编号是 [1..len(contexts)]，直接用 n-1 访问
+    import re as _re
     cites = []
-    for m in {i + 1 for i in (int(x) for x in
-              __import__("re").findall(r"\[(\d+)\]", raw)) if 1 <= i <= len(contexts)}:
-        c = contexts[m - 1]
-        cites.append({"n": m, "source": c["source"],
-                      "chapter": c["chapter"], "page": c["page"]})
+    for n in sorted({int(x) for x in _re.findall(r"\[(\d+)\]", raw)}):
+        if 1 <= n <= len(contexts):
+            c = contexts[n - 1]
+            cites.append({"n": n, "source": c["source"],
+                          "chapter": c["chapter"], "page": c["page"]})
 
     return {
         "answer": final,
         "cites": sorted(cites, key=lambda x: x["n"]),
-        "rejected": not ok,
+        "rejected": rejected,
         "issues": issues,
         "retrieved": hits,
     }

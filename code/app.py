@@ -49,7 +49,7 @@ with tab_qa:
 with tab_diag:
     st.subheader("看看你还差多少学分能毕业")
     col1, col2 = st.columns(2)
-    prof = col1.text_input("专业", value="软件工程")
+    prof = col1.text_input("专业", value="数据科学与大数据技术+经济学联合培养")
     grade = col2.number_input("年级", value=2024, step=1)
 
     if st.button("开始诊断", type="primary"):
