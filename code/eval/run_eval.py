@@ -71,10 +71,9 @@ def run_fact(df, save=True):
     rows = []
     for _, r in facts.iterrows():
         res = rag.answer_question(str(r["question"]))
-        if res["rejected"]:
-            verdict = {"verdict": "wrong", "comment": "系统拒答"}
-        else:
-            verdict = _judge(r["question"], str(r["standard_answer"]), res["answer"])
+        # 即使系统标记为「拒答」，也交给裁判判断：
+        # 模型有时会先给出正确内容、再补一句谨慎的拒答话术，不应整题判错
+        verdict = _judge(r["question"], str(r["standard_answer"]), res["answer"])
         rows.append({
             "id": r["id"], "question": r["question"],
             "answer": res["answer"], "std": r["standard_answer"],

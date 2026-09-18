@@ -22,15 +22,28 @@ with tab_qa:
     if "history" not in st.session_state:
         st.session_state.history = []
 
+    qa_prof = st.text_input(
+        "你问的是哪个专业（可留空）",
+        value="数据科学与大数据技术+经济学联合培养",
+        help="已收录：数据科学与大数据技术+经济学联合培养、数据科学与大数据技术（含英才班）、"
+             "人工智能、智能科学与技术（含新工科英才班）、机器人工程、智能机器人英才班，"
+             "以及 HarmonyOS技术与应用、具身智能机器人应用开发、智能机器人设计与开发、"
+             "行业大数据挖掘及应用等微专业",
+        key="qa_prof")
+
     q = st.text_input("输入你的问题",
-                      placeholder="例：软件工程专业毕业最低学分是多少？",
+                      placeholder="例：人工智能专业毕业最低学分是多少？",
                       key="qa_input")
 
     if st.button("提问", type="primary") and q.strip():
         import rag
+        # 用户填了专业且问题里没写专业名时，自动拼上，保证检索到正确专业的资料
+        ask = q.strip()
+        if qa_prof.strip() and qa_prof.strip() not in ask:
+            ask = f"{qa_prof.strip()}专业的{ask}"
         with st.spinner("正在检索培养方案…"):
-            res = rag.answer_question(q.strip())
-        st.session_state.history.insert(0, (q.strip(), res))
+            res = rag.answer_question(ask)
+        st.session_state.history.insert(0, (ask, res))
 
     for question, res in st.session_state.history:
         st.markdown(f"**你：** {question}")

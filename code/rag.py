@@ -29,7 +29,10 @@ SYSTEM_PROMPT = """你是「选课军师」，一名严格依据给定资料回�
 6. 若问题询问的是学校整体信息（如学院数量、校区、排名、就业率、校历等），
    而资料只涉及本专业培养方案，必须回答「资料不足，无法回答」，
    不得根据资料中出现的个别学院、单位或课程进行推断；
-7. 不要复述规则本身，直接给出结论。"""
+7. 每条资料开头的「来源」标注了该资料所属的专业（即培养方案文件名）。
+   若问题指明了具体专业，只能使用来源与该专业一致的资料作答，
+   来源不符的资料一律不得引用；若资料中没有与问题专业一致的内容，回答「资料不足，无法回答」；
+8. 不要复述规则本身，直接给出结论。"""
 
 USER_TEMPLATE = """【资料】
 {context}
@@ -47,13 +50,56 @@ def _get_index():
     return _index
 
 
-def retrieve(question: str, top_k: int = config.TOP_K):
-    return _get_index().search(question, top_k)
+def _major_names():
+    """从 data/raw 的 PDF 文件名提取已收录专业名（去掉『培养方案-』前缀），
+    按长度降序排列，便于对问题做最长匹配。"""
+    import re as _re
+    names = []
+    for f in sorted(config.DATA_RAW.glob("*.pdf")):
+        n = _re.sub(r"^培养方案[-－]?", "", f.stem)
+        names.append(n)
+    return sorted(set(names), key=len, reverse=True)
+
+
+def _match_major(question: str):
+    """判断问题是否明确提到了某个已收录专业，返回专业名（用于 source 过滤）或 None。
+    微专业允许省略「（微专业）」后缀来匹配。"""
+    for m in _major_names():
+        if m in question or m.replace("（微专业）", "") in question:
+            return m
+    return None
+
+
+def retrieve(question: str, top_k: int = config.TOP_K, source_filter: str = None):
+    return _get_index().search(question, top_k, source_filter=source_filter)
 
 
 def answer_question(question: str, top_k: int = config.TOP_K):
     """返回 dict：answer / cites / rejected / issues / retrieved"""
-    hits = retrieve(question, top_k)
+    # 第 0 层防护：专业路由 —— 问题明确提到某专业时，
+    # 直接在该专业的切片内检索（source 过滤），避免被其他专业挤出 top-k。
+    # 注意：检索用的问题要把专业名剔除，避免长专业名稀释真正的问题语义；
+    # 专业信息已通过 source 过滤表达，无需重复出现在检索 query 里。
+    major = _match_major(question)
+    if major:
+        # 把专业名的两种写法（带/不带「（微专业）」后缀）都从检索 query 里剔除
+        q_retrieve = question
+        for token in (major, major.replace("（微专业）", "")):
+            q_retrieve = q_retrieve.replace(token, "")
+        q_retrieve = (q_retrieve.replace("（微专业）", "")
+                      .replace("（专业）", "")
+                      .replace("（）", "").strip() or question)
+        hits = retrieve(q_retrieve, top_k + 3, source_filter=major)
+        if not hits:
+            return {
+                "answer": config.REJECT_MSG,
+                "cites": [],
+                "rejected": True,
+                "reason": f"问题所问专业「{major}」不在资料来源中",
+                "retrieved": [],
+            }
+    else:
+        hits = retrieve(question, top_k)
 
     # 第一层防护：检索相似度低于阈值 → 判定为知识库外问题，直接拒答
     if not hits or hits[0][0] < config.SCORE_THRESHOLD:
@@ -67,7 +113,7 @@ def answer_question(question: str, top_k: int = config.TOP_K):
 
     contexts = [h[1] for h in hits]
     ctx_text = "\n\n".join(
-        f"[{i + 1}] （{c['chapter']} · P{c['page']}）\n{c['text']}"
+        f"[{i + 1}] （来源：{c['source']} · {c['chapter']} · P{c['page']}）\n{c['text']}"
         for i, c in enumerate(contexts)
     )
 
