@@ -49,8 +49,9 @@ def load():
 
 
 def recommend(semester: str = "2026秋", profession: str = None,
-              grade: int = None, max_credit: int = CREDIT_MAX):
-    diag = diagnose(profession, grade)
+              grade: int = None, max_credit: int = CREDIT_MAX,
+              tra_df: pd.DataFrame = None):
+    diag = diagnose(profession, grade, tra_df)
     if "error" in diag:
         return diag
 
@@ -62,8 +63,12 @@ def recommend(semester: str = "2026秋", profession: str = None,
     courses = courses[courses["开课学期"] == semester]
 
     # 已通过的课程不再推荐；未通过的记录为「待重修」
-    from diagnose import TRA_FILE
-    tra = pd.read_csv(TRA_FILE, comment="#")
+    # 优先使用外部传入的成绩单（前端上传），否则用内置成绩单
+    if tra_df is not None:
+        tra = tra_df
+    else:
+        from diagnose import TRA_FILE
+        tra = pd.read_csv(TRA_FILE, comment="#")
     passed = set(tra[tra["成绩"] >= 60]["课程名称"])
     failed = set(tra[tra["成绩"] < 60]["课程名称"])
 

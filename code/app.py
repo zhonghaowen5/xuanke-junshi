@@ -32,6 +32,10 @@ except Exception as _e:
     _profs, _grades = [], []
     st.sidebar.error(f"读取培养方案规则表失败：{_e}\n\n请检查 requirements.csv")
 
+
+# ============ 成绩单上传：解析逻辑见 transcript.py ============
+from transcript import TRA_TEMPLATE, parse_transcript
+
 with st.sidebar:
     st.header("🎓 选课军师")
     st.caption("学业规划 AI 助手 · 逐光队")
@@ -132,13 +136,33 @@ with tab_diag:
 
     up = st.file_uploader("上传你的成绩单（CSV，可选）", type=["csv"],
                           help="表头需为：课程代码,课程名称,学分,所属模块,学期,成绩。"
-                               "不上传则使用内置成绩单。")
+                               "不上传则使用内置演示成绩单。")
+    st.download_button(
+        "📥 下载成绩单模板（用 Excel 照着填）",
+        data=("\ufeff" + TRA_TEMPLATE).encode("utf-8"),
+        file_name="成绩单模板.csv", mime="text/csv",
+        help="下载后用 Excel 打开，把你的课程填进去，另存为 CSV 再上传。")
+
+    tra_df = None
     if up is not None:
-        st.info(f"已选择文件：{up.name}（接入解析中，当前仍按内置成绩单计算）")
+        try:
+            tra_df = parse_transcript(up.getvalue())
+        except ValueError as e:
+            st.error(f"❌ 成绩单解析失败：{e}")
+        else:
+            st.success(f"✅ 已读取 **{len(tra_df)} 门课程**，"
+                       "诊断和选课建议将按你上传的成绩单计算")
+            unknown = set(tra_df["所属模块"]) - {"必修课", "选修课"}
+            if unknown:
+                st.warning("成绩单里有不属于「必修课 / 选修课」的模块："
+                           f"{'、'.join(sorted(unknown))}，"
+                           "这些学分不会计入诊断结果。")
+            with st.expander("预览解析后的成绩单"):
+                st.dataframe(tra_df, use_container_width=True, hide_index=True)
 
     if st.button("开始诊断", type="primary"):
         with st.spinner("正在比对培养方案…"):
-            d = diagnose(prof, grade)
+            d = diagnose(prof, grade, tra_df)
         if "error" in d:
             st.error(d["error"])
         else:
@@ -156,8 +180,9 @@ with tab_diag:
                             text=f"达成率 {m['达成率']}%")
             if d["风险提示"]:
                 st.warning("\n".join("· " + r for r in d["风险提示"]))
-            st.caption("⚠️ 当前按内置成绩单计算（演示用）；"
-                       "上传本人成绩单后即为真实进度。")
+            st.caption("📊 数据来源：" +
+                       ("**你上传的成绩单**" if tra_df is not None
+                        else "内置演示成绩单（可在上方上传你自己的）"))
 
 # ---------------- 选课建议 ----------------
 with tab_rec:
@@ -177,10 +202,12 @@ with tab_rec:
         pass
 
     semester = st.text_input("学期", value="2026秋")
+    if tra_df is not None:
+        st.caption("ℹ️ 将按你在「学分诊断」页上传的成绩单判断先修课与重修。")
     if st.button("生成建议", type="primary"):
         import recommend as rm
         with st.spinner("正在计算课程组合…"):
-            r = rm.recommend(semester, prof, grade)
+            r = rm.recommend(semester, prof, grade, tra_df=tra_df)
         if "error" in r:
             st.error(r["error"])
         elif not r["推荐课程"]:
