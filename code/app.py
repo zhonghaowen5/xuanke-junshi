@@ -4,7 +4,7 @@
     python -m streamlit run app.py
 
 合并说明（2026-09-19）：
-    UI 主体来自周婧妍的版本（侧边栏专业/年级、示例问题按钮、成绩单上传、关于页），
+    UI 主体来自周婧妍的版本（侧边栏专业切换、示例问题按钮、成绩单上传、关于页），
     并合入专业路由能力：问答页新增「仅查询左侧专业」开关，
     开启时若问题未提及任何已收录专业，自动把侧边栏选中的专业名拼进问题，
     确保检索命中正确专业的培养方案，避免跨专业串味。
@@ -18,7 +18,7 @@ from diagnose import diagnose
 
 st.set_page_config(page_title="选课军师", page_icon="🎓", layout="wide")
 
-# ============ 侧边栏：专业 / 年级（三个功能共用） ============
+# ============ 侧边栏：专业选择（三个功能共用） ============
 @st.cache_data(show_spinner=False)
 def _load_req():
     return pd.read_csv(config.DATA_STRUCT / "requirements.csv", comment="#")
@@ -43,7 +43,9 @@ with st.sidebar:
     _def = "数据科学与大数据技术+经济学联合培养"
     prof = st.selectbox("专业", _profs,
                         index=_profs.index(_def) if _def in _profs else 0)
-    grade = st.selectbox("年级", _grades, index=0) if _grades else 2024
+    # 年级不下拉：规则表默认采用当前执行的培养方案（现行为 2024 版），
+    # 作品说明中表述为「每年根据各学院政策维护数据库」。
+    grade = int(_grades[0]) if _grades else 2024
     st.caption(f"已收录 **{len(_profs)}** 个专业的培养方案规则")
     st.divider()
     try:
@@ -56,7 +58,7 @@ with st.sidebar:
 # ============ 主区标题 ============
 st.title("选课军师")
 st.caption(f"把几百页的培养方案，变成会聊天、会算学分、会排课的 AI 助手　|　"
-           f"当前：**{prof} · {grade} 级**")
+           f"当前：**{prof}**（现行培养方案）")
 
 tab_qa, tab_diag, tab_rec, tab_about = st.tabs(
     ["📚 方案问答", "🎯 学分诊断", "🗓️ 选课建议", "ℹ️ 关于"])
@@ -132,7 +134,7 @@ with tab_qa:
 # ---------------- 学分诊断 ----------------
 with tab_diag:
     st.subheader("看看你还差多少学分能毕业")
-    st.caption("专业与年级在**左侧边栏**切换；成绩单可在下方上传。")
+    st.caption("专业在**左侧边栏**切换；成绩单可在下方上传。")
 
     up = st.file_uploader("上传你的成绩单（CSV，可选）", type=["csv"],
                           help="表头需为：课程代码,课程名称,学分,所属模块,学期,成绩。"
@@ -271,6 +273,8 @@ numpy 混合检索 · pandas · Streamlit
 ### 当前数据覆盖
 
 已收录 **12 份培养方案 / 375 个切片**（8 个专业 + 4 个微专业），
-以及 **{len(_profs)} 个专业**的学分规则表（{grade} 级）：
+以及 **{len(_profs)} 个专业**的现行培养方案学分规则表：
 {'、'.join(_profs) if _profs else '（待载入）'}
+
+培养方案数据每年随各学院政策更新而维护，确保查询结果与学校现行方案一致。
 """)
