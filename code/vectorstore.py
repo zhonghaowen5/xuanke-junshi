@@ -64,6 +64,15 @@ def build_index():
     print(f"[+] 索引已保存 → {out}")
 
 
+def _normalize_source(source: str) -> str:
+    """把 source 文件名统一成专业名：去掉 .pdf 和「培养方案-」前缀。"""
+    s = source
+    if s.lower().endswith(".pdf"):
+        s = s[:-4]
+    s = re.sub(r"^培养方案[-－]?", "", s)
+    return s
+
+
 class Index:
     """加载一次，反复检索。"""
 
@@ -80,8 +89,8 @@ class Index:
     def search(self, query: str, top_k: int = config.TOP_K, source_filter: str = None):
         """返回 [(相似度, 元数据, 向量得分), ...]，按混合得分降序。
 
-        source_filter: 若给定，只在 source 文件名包含该子串的片段中检索
-        （用于多专业场景下的「专业路由」）。
+        source_filter: 若给定，只在 source 文件名对应的专业名等于该值的片段中检索
+        （用于多专业场景下的「专业路由」，避免「计算机科学与技术」命中「计算机科学与技术菁英班」）。
         """
         qv = embed([query])[0]
         vec_score = self.vectors @ qv                      # 余弦相似度
@@ -96,7 +105,9 @@ class Index:
         score = 0.7 * vec_score + 0.3 * kw_score
 
         if source_filter:
-            mask = np.array([source_filter in m["source"] for m in self.meta])
+            mask = np.array([
+                _normalize_source(m["source"]) == source_filter for m in self.meta
+            ])
             if not mask.any():
                 return []
             score = np.where(mask, score, -np.inf)

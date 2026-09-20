@@ -8,6 +8,9 @@ data/chunks/
 data/index/
 data/structured/
 
+# 真实成绩单（隐私数据）
+transcript*.csv
+
 # Python 缓存
 __pycache__/
 *.py[cod]
@@ -21,3 +24,13 @@ venv/
 Thumbs.db
 app_backup*.py 
 app_*backup*.py 
+
+# 评测临时日志
+code/eval/*.log
+code/eval/*-output.txt
+code/eval/_fact_chunk_*.json
+code/eval/reject-output.txt
+code/eval/fact-output.txt
+code/eval/full-output.txt
+code/diagnose-output.txt
+code/recommend-output.txt
