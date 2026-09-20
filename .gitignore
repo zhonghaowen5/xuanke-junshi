@@ -1,0 +1,7 @@
+# 真实成绩单（隐私数据，绝对不要提交到公开仓库）
+transcript*.csv
+transcript-*.csv
+
+# 运行输出与日志
+*-output.txt
+*.log

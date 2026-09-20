@@ -26,11 +26,10 @@ app_backup*.py
 app_*backup*.py 
 
 # 评测临时日志
-code/eval/*.log
-code/eval/*-output.txt
-code/eval/_fact_chunk_*.json
-code/eval/reject-output.txt
-code/eval/fact-output.txt
-code/eval/full-output.txt
-code/diagnose-output.txt
-code/recommend-output.txt
+# 注意：本文件位于 code/ 目录下，以下路径均相对于 code/，
+# 不能写成 code/eval/*.log（那样会匹配成 code/code/eval/*.log 而失效）
+eval/*.log
+eval/*-output.txt
+eval/_fact_chunk_*.json
+diagnose-output.txt
+recommend-output.txt
