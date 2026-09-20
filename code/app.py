@@ -18,6 +18,17 @@ from diagnose import diagnose
 
 st.set_page_config(page_title="选课军师", page_icon="🎓", layout="wide")
 
+# 隐藏 Streamlit 默认菜单、页脚、页眉，使 Demo 和视频更干净
+st.markdown(
+    """
+    <style>
+    #MainMenu, footer, header {visibility: hidden;}
+    .block-container {padding-top: 2rem;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # ============ 侧边栏：专业选择（三个功能共用） ============
 @st.cache_data(show_spinner=False)
 def _load_req():
@@ -239,6 +250,20 @@ with tab_rec:
 
 # ---------------- 关于 ----------------
 with tab_about:
+    # 动态统计当前知识库规模，避免文案随数据更新而过时
+    _n_pdfs = 0
+    try:
+        _n_pdfs = len(list(config.DATA_RAW.glob("*.pdf")))
+    except Exception:
+        pass
+    _n_chunks = 0
+    try:
+        with open(config.DATA_CHUNKS / "chunks.jsonl", "r", encoding="utf-8") as _cf:
+            for _ in _cf:
+                _n_chunks += 1
+    except Exception:
+        pass
+
     st.subheader("关于本项目")
     st.markdown(f"""
 **选课军师** —— 学业规划 AI 助手
@@ -272,7 +297,7 @@ numpy 混合检索 · pandas · Streamlit
 
 ### 当前数据覆盖
 
-已收录 **20 份培养方案 / 755 个切片**（人工智能学院 12 份 + 计算机科学与技术学院 8 份），
+已收录 **{_n_pdfs} 份培养方案 / {_n_chunks} 个切片**，
 以及 **{len(_profs)} 个专业**的现行培养方案学分规则表：
 {'、'.join(_profs) if _profs else '（待载入）'}
 
