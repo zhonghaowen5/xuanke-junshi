@@ -176,6 +176,9 @@ with tab_diag:
     if st.button("开始诊断", type="primary"):
         with st.spinner("正在比对培养方案…"):
             d = diagnose(prof, grade, tra_df)
+        st.session_state["diag"] = d          # 存下来，供导出报告使用
+        st.session_state["diag_prof"] = prof
+        st.session_state["diag_grade"] = grade
         if "error" in d:
             st.error(d["error"])
         else:
@@ -186,6 +189,48 @@ with tab_diag:
                       delta_color="inverse")
 
             st.divider()
+
+            # ---- 可视化：总学分完成度环形图 + 各模块达成率柱状图 ----
+            try:
+                import altair as alt
+
+                _donut_df = pd.DataFrame({
+                    "状态": ["已修", "待修"],
+                    "学分": [d["已修"], d["总缺口"]],
+                })
+                _donut = alt.Chart(_donut_df).mark_arc(innerRadius=68).encode(
+                    theta=alt.Theta("学分:Q", stack=True),
+                    color=alt.Color(
+                        "状态:N",
+                        scale=alt.Scale(domain=["已修", "待修"],
+                                        range=["#10B981", "#E5E7EB"]),
+                        legend=alt.Legend(orient="bottom", title=None),
+                    ),
+                    tooltip=["状态:N", "学分:Q"],
+                ).properties(width=250, height=250, title="总学分完成度")
+
+                _mod_df = pd.DataFrame([
+                    {"模块": m["模块"], "达成率": m["达成率"],
+                     "已修": m["已修"], "要求": m["要求"], "缺口": m["缺口"]}
+                    for m in d["模块明细"]
+                ])
+                _bar = alt.Chart(_mod_df).mark_bar(cornerRadiusEnd=4).encode(
+                    x=alt.X("达成率:Q", scale=alt.Scale(domain=[0, 100]),
+                            title="达成率 (%)"),
+                    y=alt.Y("模块:N", sort="-x", title=None),
+                    color=alt.value("#2563EB"),
+                    tooltip=["模块:N", "已修:Q", "要求:Q", "缺口:Q", "达成率:Q"],
+                ).properties(height=44 * max(len(_mod_df), 1),
+                             title="各模块达成率")
+
+                _lc, _rc = st.columns([1, 1.3])
+                with _lc:
+                    st.altair_chart(_donut, use_container_width=True)
+                with _rc:
+                    st.altair_chart(_bar, use_container_width=True)
+            except Exception as _ve:
+                st.caption(f"（图表渲染跳过：{_ve}）")
+
             for m in d["模块明细"]:
                 st.markdown(f"**{m['模块']}** — 已修 {m['已修']} / 要求 {m['要求']}"
                             f"　·　缺口 {m['缺口']} 学分")
@@ -196,6 +241,18 @@ with tab_diag:
             st.caption("📊 数据来源：" +
                        ("**你上传的成绩单**" if tra_df is not None
                         else "内置演示成绩单（可在上方上传你自己的）"))
+
+            try:
+                from report import build_html
+                _html_d = build_html(prof, grade, d)
+                st.download_button(
+                    "📄 导出学分诊断报告（HTML，可打印为 PDF）",
+                    data=_html_d.encode("utf-8"),
+                    file_name=f"学分诊断报告-{prof}.html",
+                    mime="text/html",
+                    help="下载后用浏览器打开，按 Ctrl+P 即可另存为 PDF。")
+            except Exception as _re:
+                st.caption(f"（报告导出不可用：{_re}）")
 
 # ---------------- 选课建议 ----------------
 with tab_rec:
@@ -227,6 +284,8 @@ with tab_rec:
             st.warning("没有符合条件的课程。请检查课程库中是否有该专业、"
                        "该学期的开课数据，或先修课是否已通过。")
         else:
+            st.session_state["rec"] = r
+            st.session_state["rec_sem"] = semester
             st.success(f"推荐 {len(r['推荐课程'])} 门课，"
                        f"合计 {r['总学分']} 学分（建议区间 18–24）")
             st.dataframe(pd.DataFrame(r["推荐课程"]),
@@ -247,6 +306,28 @@ with tab_rec:
                     st.info(s)
             if not _courses_prof_empty:
                 st.caption("课程库为真实开课计划数据（2026 秋）。")
+
+            # ---- 导出个人学业规划报告 ----
+            st.divider()
+            _d = st.session_state.get("diag")
+            if _d and "error" not in _d:
+                try:
+                    from report import build_html
+                    _html = build_html(
+                        st.session_state.get("diag_prof", prof),
+                        st.session_state.get("diag_grade", grade),
+                        _d, rec=r, semester=semester)
+                    st.download_button(
+                        "📄 导出个人学业规划报告（HTML，可打印为 PDF）",
+                        data=_html.encode("utf-8"),
+                        file_name=f"学业规划报告-{prof}-{semester}.html",
+                        mime="text/html",
+                        help="下载后用浏览器打开，按 Ctrl+P 即可另存为 PDF。")
+                except Exception as _re:
+                    st.caption(f"（报告导出不可用：{_re}）")
+            else:
+                st.caption("ℹ️ 先在「学分诊断」页点一次「开始诊断」，"
+                           "即可导出含诊断 + 选课建议的完整报告。")
 
 # ---------------- 关于 ----------------
 with tab_about:
