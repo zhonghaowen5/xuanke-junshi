@@ -39,12 +39,23 @@ def make_template():
     print(f"[+] 模板已生成：\n  {REQ_FILE}\n  {TRA_FILE}\n请照格式填写真实数据后重跑。")
 
 
-def load(profession: str = None, grade: int = None):
-    if not REQ_FILE.exists() or not TRA_FILE.exists():
-        raise SystemExit("[!] 缺少规则表或成绩单，请先运行 python diagnose.py --template")
+def load(profession: str = None, grade: int = None,
+         tra_df: pd.DataFrame = None):
+    """读取规则表与成绩单。
+
+    tra_df：外部传入的成绩单（如前端上传解析后的 DataFrame）。
+    传入时不再读取内置 transcript.csv，实现「按本人成绩单诊断」。"""
+    if not REQ_FILE.exists():
+        raise SystemExit("[!] 缺少规则表，请先运行 python diagnose.py --template")
 
     req = pd.read_csv(REQ_FILE, comment="#")
-    tra = pd.read_csv(TRA_FILE, comment="#")
+
+    if tra_df is not None:
+        tra = tra_df
+    else:
+        if not TRA_FILE.exists():
+            raise SystemExit("[!] 缺少成绩单，请先运行 python diagnose.py --template")
+        tra = pd.read_csv(TRA_FILE, comment="#")
 
     if profession:
         req = req[req["专业"] == profession]
@@ -53,9 +64,10 @@ def load(profession: str = None, grade: int = None):
     return req, tra
 
 
-def diagnose(profession: str = None, grade: int = None):
-    """返回结构化的诊断结果。"""
-    req, tra = load(profession, grade)
+def diagnose(profession: str = None, grade: int = None,
+             tra_df: pd.DataFrame = None):
+    """返回结构化的诊断结果。tra_df 为外部成绩单（可选）。"""
+    req, tra = load(profession, grade, tra_df)
     if req.empty:
         return {"error": "规则表中没有匹配的专业/年级"}
 
