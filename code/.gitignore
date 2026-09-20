@@ -19,3 +19,5 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+app_backup*.py 
+app_*backup*.py 
