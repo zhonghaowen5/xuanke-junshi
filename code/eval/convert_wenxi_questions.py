@@ -293,6 +293,9 @@ def main():
                     help="真正写入 questions.csv；不加则只预览")
     ap.add_argument("--keep-unknown", action="store_true",
                     help="保留未接入专业的题目（不推荐）")
+    ap.add_argument("--out",
+                    help="输出到指定 CSV（默认写 eval/questions.csv）；"
+                         "用于先生成临时题库单独试跑评测")
     a = ap.parse_args()
 
     path = Path(a.xlsx)
@@ -302,6 +305,20 @@ def main():
     items = convert(path, a.keep_unknown)
     if not items:
         raise SystemExit("[!] 没有可用题目，终止。")
+
+    if a.out:
+        out = Path(a.out)
+        with open(out, "w", encoding="utf-8", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=OUT_COLS)
+            w.writeheader()
+            for i, x in enumerate(items, 1):
+                w.writerow({
+                    "id": i, "type": x["type"], "question": x["question"],
+                    "standard_answer": x["standard_answer"], "source": x["source"],
+                })
+        print(f"\n[✓] 已写出 {len(items)} 题 -> {out}")
+        return
+
     write_out(items, a.mode, a.write)
 
 

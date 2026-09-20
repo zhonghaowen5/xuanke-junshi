@@ -31,5 +31,9 @@ app_*backup*.py
 eval/*.log
 eval/*-output.txt
 eval/_fact_chunk_*.json
+eval/_reject_chunk_*.json
+eval/_wenxi_clean.csv
+eval/questions.csv.bak*
+data/structured/*.bak*
 diagnose-output.txt
 recommend-output.txt
