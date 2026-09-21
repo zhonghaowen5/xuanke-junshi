@@ -10,6 +10,8 @@
     确保检索命中正确专业的培养方案，避免跨专业串味。
 """
 
+import random
+
 import pandas as pd
 import streamlit as st
 
@@ -83,20 +85,41 @@ with tab_qa:
     if "history" not in st.session_state:
         st.session_state.history = []
 
-    _examples = [
-        f"{prof}专业毕业需要多少总学分？",
-        f"{prof}专业的选修课要修满多少学分？",
-        f"{prof}专业的实践环节包含哪些内容？",
-        "英才班和普通班的学分要求有什么区别？",
+    # 推荐问题候选池：全部是可被系统正确回答的事实性问题
+    _EXAMPLE_QUESTIONS = [
+        "{prof}专业毕业需要多少总学分？",
+        "{prof}专业的选修课要修满多少学分？",
+        "{prof}专业的必修课要修满多少学分？",
+        "{prof}专业的实践环节包含哪些内容？",
+        "计算机科学文峰班毕业需要多少总学分？",
+        "软件工程英才班毕业需要多少总学分？",
+        "智能机器人英才班毕业需要多少总学分？",
+        "数据科学与大数据技术英才班毕业需要多少总学分？",
     ]
-    st.markdown("**试试这些问题：**")
+
+    # 用 session_state 保持当前 4 条推荐索引，避免每次 rerun 都跳动
+    if "qa_example_idx" not in st.session_state:
+        st.session_state.qa_example_idx = random.sample(
+            range(len(_EXAMPLE_QUESTIONS)), 4)
+
+    _examples = [
+        _EXAMPLE_QUESTIONS[i].format(prof=prof)
+        for i in st.session_state.qa_example_idx
+    ]
+
+    _h1, _h2 = st.columns([4, 1])
+    with _h1:
+        st.markdown("**试试这些问题：**")
+    with _h2:
+        if st.button("🔄 换一批", key="refresh_examples"):
+            st.session_state.qa_example_idx = random.sample(
+                range(len(_EXAMPLE_QUESTIONS)), 4)
+            st.rerun()
+
     _cols = st.columns(2)
     for _i, _ex in enumerate(_examples):
         if _cols[_i % 2].button(_ex, key=f"ex{_i}", use_container_width=True):
             st.session_state.qa_input = _ex
-            # 第 4 个示例是跨专业对比题，自动关闭专业限定
-            if _i == 3:
-                st.session_state.qa_lock = False
             st.rerun()
 
     qa_lock = st.checkbox(
