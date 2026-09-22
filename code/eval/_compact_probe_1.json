@@ -1,0 +1,122 @@
+[
+  {
+    "no": 16,
+    "question": "英才班（新工科）毕业总学分要求多少？",
+    "old_len": 31,
+    "new_len": 14,
+    "new_answer": "总学分：152学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 17,
+    "question": "算法设计与分析（双语）这门课是几学分？",
+    "old_len": 155,
+    "new_len": 25,
+    "new_answer": "算法设计与分析（双语）这门课是2.5学分 [3]。",
+    "rejected": false
+  },
+  {
+    "no": 18,
+    "question": "计算机组织与结构安排在第几学期？",
+    "old_len": 24,
+    "new_len": 22,
+    "new_answer": "《计算机组织与结构》安排在第4学期 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 19,
+    "question": "认知科学基础在智能科学与技术新工科英才班是必修还是选修？",
+    "old_len": 167,
+    "new_len": 17,
+    "new_answer": "《认知科学基础》是选修课 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 20,
+    "question": "智能科学与技术新工科英才班的计算机组织与结构是几学分？",
+    "old_len": 37,
+    "new_len": 21,
+    "new_answer": "《计算机组织与结构》是3.5学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 21,
+    "question": "智能机器人英才班毕业需要多少总学分？",
+    "old_len": 25,
+    "new_len": 25,
+    "new_answer": "智能机器人英才班毕业需要总学分166学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 22,
+    "question": "智能机器人英才班的必修课和选修课要求分别是多少学分？",
+    "old_len": 161,
+    "new_len": 19,
+    "new_answer": "必修152学分，选修14学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 23,
+    "question": "智能机器人英才班的选修课要求修满多少学分？",
+    "old_len": 208,
+    "new_len": 16,
+    "new_answer": "选修课要求修满14学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 24,
+    "question": "智能机器人英才班的“机器人技术”在第几学期开课？",
+    "old_len": 21,
+    "new_len": 19,
+    "new_answer": "“机器人技术”在第5学期开课 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 25,
+    "question": "智能机器人英才班的实践教学学分占比是多少？",
+    "old_len": 28,
+    "new_len": 18,
+    "new_answer": "实践教学学分占比=18.4% [1]",
+    "rejected": false
+  },
+  {
+    "no": 26,
+    "question": "数据科学与大数据技术专业毕业需要多少总学分？",
+    "old_len": 29,
+    "new_len": 29,
+    "new_answer": "数据科学与大数据技术专业毕业需要总学分150学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 27,
+    "question": "数据科学与大数据技术专业的专业核心课包含哪些？",
+    "old_len": 978,
+    "new_len": 99,
+    "new_answer": "数据科学与大数据技术专业的专业核心课包含：\n大数据导论 [4]\n数据结构A [4]\n计算机组织与结构 [8]\n数据库原理(双语) [8]\n机器学习 [8]\n自然语言处理技术 [8]\n操作系统 [8]",
+    "rejected": false
+  },
+  {
+    "no": 28,
+    "question": "数据科学与大数据技术专业的“机器学习”是多少学分？",
+    "old_len": 30,
+    "new_len": 15,
+    "new_answer": "“机器学习”是3学分 [2]。",
+    "rejected": false
+  },
+  {
+    "no": 29,
+    "question": "数据科学与大数据技术专业的“自然语言处理技术”在第几学期开课？",
+    "old_len": 97,
+    "new_len": 22,
+    "new_answer": "“自然语言处理技术”在第5学期开课 [4]。",
+    "rejected": false
+  },
+  {
+    "no": 30,
+    "question": "数据科学与大数据技术专业的实践教学学分占比是多少？",
+    "old_len": 32,
+    "new_len": 19,
+    "new_answer": "实践教学学分占比为23.3% [1]。",
+    "rejected": false
+  }
+]

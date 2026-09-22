@@ -1,0 +1,122 @@
+[
+  {
+    "no": 31,
+    "question": "数据科学与大数据技术+经济学联合培养毕业需要多少总学分？",
+    "old_len": 35,
+    "new_len": 9,
+    "new_answer": "166学分 [1]",
+    "rejected": false
+  },
+  {
+    "no": 32,
+    "question": "数据科学与大数据技术+经济学联合培养的必修课要求修满多少学分？",
+    "old_len": 121,
+    "new_len": 17,
+    "new_answer": "必修课要求修满140学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 33,
+    "question": "数据科学与大数据技术+经济学联合培养的“政治经济学I”在第几学期开课？",
+    "old_len": 20,
+    "new_len": 20,
+    "new_answer": "“政治经济学I”在第1学期开课 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 34,
+    "question": "数据科学与大数据技术+经济学联合培养的“机器学习基础”是必修还是选修？",
+    "old_len": 17,
+    "new_len": 17,
+    "new_answer": "“机器学习基础”是必修课 [3]。",
+    "rejected": false
+  },
+  {
+    "no": 35,
+    "question": "数据科学与大数据技术+经济学联合培养授予什么学位？",
+    "old_len": 108,
+    "new_len": 21,
+    "new_answer": "授予工学学士学位和经济学学士学位 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 36,
+    "question": "数据科学与大数据技术英才班毕业总共多少学分？",
+    "old_len": 29,
+    "new_len": 29,
+    "new_answer": "必修114学分，选修18学分，总学分：132学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 37,
+    "question": "数据科学与大数据技术英才班必修和选修各多少？",
+    "old_len": 32,
+    "new_len": 19,
+    "new_answer": "必修114学分，选修18学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 38,
+    "question": "数据科学与大数据技术英才班的“数据结构与算法”这门课是几学分？",
+    "old_len": 73,
+    "new_len": 7,
+    "new_answer": "3学分 [2]",
+    "rejected": false
+  },
+  {
+    "no": 39,
+    "question": "数据结构与算法是第几学期开的？",
+    "old_len": 39,
+    "new_len": 39,
+    "new_answer": "数据科学与大数据技术英才班专业的《数据结构与算法》课程在第3学期开课 [2]。",
+    "rejected": false
+  },
+  {
+    "no": 40,
+    "question": "数据科学与大数据技术英才班实践学分占比是多少？",
+    "old_len": 30,
+    "new_len": 18,
+    "new_answer": "实践教学学分占比=34.1% [1]",
+    "rejected": false
+  },
+  {
+    "no": 41,
+    "question": "软件工程专业毕业总共需要多少学分？",
+    "old_len": 47,
+    "new_len": 22,
+    "new_answer": "软件工程专业毕业总共需要162学分 [2]。",
+    "rejected": false
+  },
+  {
+    "no": 42,
+    "question": "软件工程英才班和普通班的总学分有什么区别？",
+    "old_len": 96,
+    "new_len": 45,
+    "new_answer": "资料不足，无法回答。本系统只依据已收录专业的培养方案作答，建议向教务处或学院教学秘书确认。",
+    "rejected": true
+  },
+  {
+    "no": 43,
+    "question": "软件工程专业卓越工程师班的选修课要修满多少学分？",
+    "old_len": 353,
+    "new_len": 28,
+    "new_answer": "软件工程专业卓越工程师班的选修课要修满22学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 44,
+    "question": "面向对象程序设计这门课多少学分？",
+    "old_len": 38,
+    "new_len": 21,
+    "new_answer": "面向对象程序设计这门课2.5学分 [3]。",
+    "rejected": false
+  },
+  {
+    "no": 45,
+    "question": "软件工程英才班的大语言模型原理与实践是第几学期开的？",
+    "old_len": 60,
+    "new_len": 30,
+    "new_answer": "软件工程英才班的大语言模型原理与实践是第4学期开的 [1]。",
+    "rejected": false
+  }
+]

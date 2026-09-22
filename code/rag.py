@@ -6,13 +6,14 @@
     python rag.py "软件工程专业毕业最低学分是多少"
 """
 
+import re
 import sys
 
 from openai import OpenAI
 
 import config
 import verify
-from vectorstore import Index
+from vectorstore import Index, _normalize_source
 
 _client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
 _index = None
@@ -32,7 +33,32 @@ SYSTEM_PROMPT = """你是「选课军师」，一名严格依据给定资料回�
 7. 每条资料开头的「来源」标注了该资料所属的专业（即培养方案文件名）。
    若问题指明了具体专业，只能使用来源与该专业一致的资料作答，
    来源不符的资料一律不得引用；若资料中没有与问题专业一致的内容，回答「资料不足，无法回答」；
-8. 不要复述规则本身，直接给出结论。"""
+8. 不要复述规则本身，直接给出结论。
+
+精简规则（在满足以上 1-8 条的前提下必须遵守）：
+9. 只给结论，不写推理过程，不解释资料本身：
+   - 禁止出现「根据资料」「资料[N]中明确指出」「资料[N]显示」「综上所述」
+     「该结论在…中得到印证」「（注：…）」以及对资料矛盾、统计误差、口径差异的分析；
+   - 禁止说明「哪些资料没有提供相关信息」「哪些资料可佐证」；
+    - 同一结论只写一次，禁止为了标注不同编号而把同一句话重复多遍；
+    - 不得为压缩字数而省略关键限定词（如「联合」「最低」「必修」「双语」「新工科」等），
+      这些词直接决定答案对错；
+    - 名称类答案必须照抄资料中的完整名称（含前缀与修饰语）：
+      资料写「联合学士学位」，就不能简写成「学士学位」；
+    - 不要写「资料[N]」「根据资料」这类对资料本身的指代。
+10. 长度控制：一般问题一句话作答，不超过 60 字；
+    问题要求列举的（如「包含哪些」「有哪些」），每条一行、只写条目本身，不展开描述，总长不超过 200 字；
+11. 引用标注：一个结论只标 1 个最相关的编号，写成 [N]；不要写 [1][2] 这类多编号，更不要为不同编号重复同一句话；
+12. 规则 1-8 优先级高于规则 9-11：需要拒答时照常拒答，不得为了简洁而省略拒答话术。
+
+拒答边界（即使资料里出现相关词句，也必须回答「资料不足，无法回答」）：
+13. 问题没有指明任何具体专业（如「有哪些竞赛可以参加」「这个专业好就业吗」），
+    资料只覆盖单个专业的培养方案，回答这类泛化问题会误导用户；
+14. 比较类问题（如「A和B有什么区别」「哪个好」「哪个更难」），
+    资料中没有同时描述双方并直接对比的段落时；
+15. 主观评价、预测、建议类问题（就业前景、专业好不好、难不难、值不值得、该怎么选）；
+16. 需要拒答时，直接说「资料不足，无法回答」即可，拒答话术由系统统一给出，
+    你不要自行发挥、不要附加解释、建议、引导语。"""
 
 USER_TEMPLATE = """【资料】
 {context}
@@ -72,6 +98,56 @@ _MAJOR_ALIASES = {
     "英才班（新工科）": "智能科学与技术新工科英才班",
     "新工科英才班": "智能科学与技术新工科英才班",
 }
+
+
+# 模型常为标注不同来源而把同一句话重复多遍（如「X是必修课 [2]；X是必修课 [4]」）。
+# 这里做一道程序化兜底：去掉引用编号与空白后完全相同的句子只保留首个版本。
+_SENT_SPLIT = re.compile(r"[；;\n]+")
+_CITE_RE = re.compile(r"\[\d+\]")
+
+
+def _compact(answer: str) -> str:
+    """剔除重复句，保证「只给结论」的精简效果稳定生效。"""
+    seen = set()
+    kept_lines = []
+    for line in answer.split("\n"):
+        parts = [p for p in _SENT_SPLIT.split(line) if p.strip()]
+        kept = []
+        for p in parts:
+            key = re.sub(r"\s+", "", _CITE_RE.sub("", p)).rstrip("。.")
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            kept.append(p.strip())
+        if kept:
+            kept_lines.append("；".join(kept))
+    return "\n".join(kept_lines).strip()
+
+
+# 「毕业/总学分」类问题的定向召回：这类答案只存在于「3、毕业学分要求」这类短小节里，
+# 而向量检索常被长达数页的「教学计划进程」表格切片挤掉，导致明明有答案却拒答。
+# 因此命中关键词时，按章节名把该小节强制补进召回结果。
+_CREDIT_KW = ("毕业", "总学分", "最低学分", "毕业学分", "学分要求")
+_CREDIT_CHAPTER_KW = ("毕业学分", "学分要求")
+
+
+def _boost_credit_chunks(hits, major, question):
+    """按章节名补召回「毕业学分要求」小节，返回补充后的 hits。"""
+    if not major or not any(k in question for k in _CREDIT_KW):
+        return hits
+    idx = _get_index()
+    seen = {h[1]["text"] for h in hits}
+    extra = []
+    for m in idx.meta:
+        if _normalize_source(m["source"]) != major:
+            continue
+        if not any(k in m.get("chapter", "") for k in _CREDIT_CHAPTER_KW):
+            continue
+        if m["text"] in seen:
+            continue
+        seen.add(m["text"])
+        extra.append((1.0, m, 1.0))   # 置顶，保证进入上下文并被引用
+    return extra + hits
 
 
 def _match_major(question: str):
@@ -136,6 +212,9 @@ def answer_question(question: str, top_k: int = config.TOP_K):
             "retrieved": hits,
         }
 
+    # 定向补召回：学分类问题的答案常藏在「毕业学分要求」短小节里
+    hits = _boost_credit_chunks(hits, major, question)
+
     contexts = [h[1] for h in hits]
     ctx_text = "\n\n".join(
         f"[{i + 1}] （来源：{c['source']} · {c['chapter']} · P{c['page']}）\n{c['text']}"
@@ -153,6 +232,8 @@ def answer_question(question: str, top_k: int = config.TOP_K):
         temperature=0.1,   # 低温度，降低发挥空间
     )
     raw = resp.choices[0].message.content.strip()
+    # 精简兜底：去掉为标注不同来源而重复的同一句话
+    raw = _compact(raw) or raw
 
     # 第三层防护：后验数字与课程名校验，不通过即降级为拒答
     final, ok, issues = verify.guard(raw, contexts)
@@ -160,6 +241,10 @@ def answer_question(question: str, top_k: int = config.TOP_K):
     # 模型遵循 Prompt 规则自行说出拒答话术时，同样视为拒答（统一标志位）
     explicit_reject = any(p in final for p in ("资料不足", "无法回答"))
     rejected = (not ok) or explicit_reject
+
+    # 模型自行拒答时，输出可能有长有短、还夹带建议；统一成标准话术，保证产品口径一致
+    if rejected:
+        final = config.REJECT_MSG
 
     # 从原始回答中提取 [n] 引用标记，映射回对应的召回片段
     # 注意：ctx_text 中的编号是 [1..len(contexts)]，直接用 n-1 访问

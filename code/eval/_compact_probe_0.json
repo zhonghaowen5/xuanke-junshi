@@ -1,0 +1,122 @@
+[
+  {
+    "no": 1,
+    "question": "人工智能专业毕业一共要修满多少学分？",
+    "old_len": 23,
+    "new_len": 23,
+    "new_answer": "人工智能专业毕业一共要修满160学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 2,
+    "question": "机器学习模型与算法这门课是几学分的？",
+    "old_len": 29,
+    "new_len": 28,
+    "new_answer": "人工智能专业的《机器学习模型与算法》课程是3学分[3]。",
+    "rejected": false
+  },
+  {
+    "no": 3,
+    "question": "计算机视觉大概在第几学期开？",
+    "old_len": 74,
+    "new_len": 27,
+    "new_answer": "人工智能专业的《计算机视觉》课程在第4学期开 [4]。",
+    "rejected": false
+  },
+  {
+    "no": 4,
+    "question": "人工智能专业的必修课要求修满多少学分？",
+    "old_len": 151,
+    "new_len": 24,
+    "new_answer": "人工智能专业的必修课要求修满136学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 5,
+    "question": "生成式AI与大模型是必修课还是选修课？",
+    "old_len": 173,
+    "new_len": 20,
+    "new_answer": "《生成式AI与大模型》是必修课 [4]。",
+    "rejected": false
+  },
+  {
+    "no": 6,
+    "question": "机器人工程的总学分是多少？",
+    "old_len": 20,
+    "new_len": 20,
+    "new_answer": "机器人工程的总学分是150学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 7,
+    "question": "微控制器原理与应用这门课是几学分？",
+    "old_len": 134,
+    "new_len": 7,
+    "new_answer": "2学分 [1]",
+    "rejected": false
+  },
+  {
+    "no": 8,
+    "question": "机器人基础2（控制）一般安排在第几学期？",
+    "old_len": 34,
+    "new_len": 30,
+    "new_answer": "机器人工程专业的机器人基础2（控制）安排在第4学期 [5]。",
+    "rejected": false
+  },
+  {
+    "no": 9,
+    "question": "机器学习这门课的课程代码是多少？",
+    "old_len": 35,
+    "new_len": 12,
+    "new_answer": "A2040960 [4]",
+    "rejected": false
+  },
+  {
+    "no": 10,
+    "question": "机器人工程专业的必修课要求修满多少学分？",
+    "old_len": 140,
+    "new_len": 25,
+    "new_answer": "机器人工程专业的必修课要求修满130学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 11,
+    "question": "智能科学与技术专业毕业要求多少总学分？",
+    "old_len": 27,
+    "new_len": 26,
+    "new_answer": "智能科学与技术专业毕业要求总学分150学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 12,
+    "question": "智能科学与技术专业的人工智能原理这门课是几学分？",
+    "old_len": 20,
+    "new_len": 20,
+    "new_answer": "人工智能原理这门课是2.5学分 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 13,
+    "question": "数据结构A一般在第几学期上？",
+    "old_len": 113,
+    "new_len": 26,
+    "new_answer": "智能科学与技术专业的数据结构A在第3学期上 [1]。",
+    "rejected": false
+  },
+  {
+    "no": 14,
+    "question": "认知科学基础的课程代码是多少？",
+    "old_len": 37,
+    "new_len": 12,
+    "new_answer": "A2040402 [4]",
+    "rejected": false
+  },
+  {
+    "no": 15,
+    "question": "智能科学与技术专业的选修课要修满多少学分？",
+    "old_len": 151,
+    "new_len": 25,
+    "new_answer": "智能科学与技术专业的选修课要修满24学分 [1]。",
+    "rejected": false
+  }
+]
