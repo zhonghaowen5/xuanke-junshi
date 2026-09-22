@@ -199,7 +199,7 @@
 | `code/eval/_compact_probe.py` | 实验五：精简前后答案长度对比探针（只读，不写回 blind.csv） |
 | `code/vectorstore.py` | 精确 source_filter 检索 |
 
-## 十、四项实验结果汇总
+## 十、五项实验结果汇总
 
 | 实验 | 回答的问题 | 指标 | 结果 |
 |---|---|---|---|
