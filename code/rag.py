@@ -61,9 +61,26 @@ def _major_names():
     return sorted(set(names), key=len, reverse=True)
 
 
+# 常见口头称呼 → 标准 PDF 专业名。
+# 例如用户说"计算机科学与技术文峰班"（按学院名习惯），实际对应 PDF《计算机科学文峰班》。
+_MAJOR_ALIASES = {
+    "计算机科学与技术文峰班": "计算机科学文峰班",
+    "计算机科学与技术文峰实验班": "计算机科学文峰班",
+    "计算机文峰班": "计算机科学文峰班",
+    "计科文峰班": "计算机科学文峰班",
+    # 口语里常把「智能科学与技术新工科英才班」简写成「英才班（新工科）」
+    "英才班（新工科）": "智能科学与技术新工科英才班",
+    "新工科英才班": "智能科学与技术新工科英才班",
+}
+
+
 def _match_major(question: str):
     """判断问题是否明确提到了某个已收录专业，返回专业名（用于 source 过滤）或 None。
     微专业允许省略「（微专业）」后缀来匹配。"""
+    # 0. 先处理已知的口头别名，避免被「计算机科学与技术」这类更短专业名截断。
+    for alias, canonical in _MAJOR_ALIASES.items():
+        if alias in question:
+            return canonical
     for m in _major_names():
         if m in question or m.replace("（微专业）", "") in question:
             return m
@@ -76,6 +93,14 @@ def retrieve(question: str, top_k: int = config.TOP_K, source_filter: str = None
 
 def answer_question(question: str, top_k: int = config.TOP_K):
     """返回 dict：answer / cites / rejected / issues / retrieved"""
+    # 规范化口头别名：让 LLM 看到的问题专业名与资料来源文件名一致，
+    # 避免模型因「计算机科学与技术文峰班」≠「计算机科学文峰班」而自行拒答。
+    original_question = question
+    for alias, canonical in _MAJOR_ALIASES.items():
+        if alias in question:
+            question = question.replace(alias, canonical)
+            break
+
     # 第 0 层防护：专业路由 —— 问题明确提到某专业时，
     # 直接在该专业的切片内检索（source 过滤），避免被其他专业挤出 top-k。
     # 注意：检索用的问题要把专业名剔除，避免长专业名稀释真正的问题语义；
