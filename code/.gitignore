@@ -38,3 +38,10 @@ eval/questions.csv.bak*
 data/structured/*.bak*
 diagnose-output.txt
 recommend-output.txt
+
+# 一次性调试脚本与中间产物（下划线开头 = 临时，不入库）
+eval/_*.py
+eval/_*.json
+eval/_baseline/
+eval/blind_out/
+*.bak-*
